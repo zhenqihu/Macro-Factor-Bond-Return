@@ -16,6 +16,11 @@ import wrds
 ''' Part1 '''
 ''' Bond Data From WRDS '''
 
+'''
+CRSP-Fama Bliss Discount Bonds: 
+https://wrds-web.wharton.upenn.edu/wrds/ds/crsp/a_treas/tfz_mth_fb/index.cfm?navId=134
+'''
+
 ## Connect to WRDS Database
 Conn=wrds.Connection(wrds_username='sevenz')
 
@@ -69,13 +74,13 @@ df=df.set_index('time_m')
 ''' Part2 '''
 ''' Econ Data From ALFRED Datasets '''
 
-’‘’
+'''
 ALFRED:
 https://alfred.stlouisfed.org
  
 fredapi:
 https://github.com/mortada/fredapi
-‘’‘
+'''
 
 ## FRED API Key: 3c63eb8e57a6e2cd7ab2fc4b913a5757
 fred = Fred(api_key ='3c63eb8e57a6e2cd7ab2fc4b913a5757')
