@@ -17,7 +17,7 @@ import wrds
 ''' Bond Data From WRDS '''
 
 '''
-CRSP-Fama Bliss Discount Bonds: 
+CRSP-Fama Bliss Discount Bonds:
 https://wrds-web.wharton.upenn.edu/wrds/ds/crsp/a_treas/tfz_mth_fb/index.cfm?navId=134
 '''
 
@@ -45,7 +45,7 @@ Bond = [bond_1, bond_2, bond_3, bond_4, bond_5]
 
 ## Set the log yield of a 1-year bond to be the risk-free rate
 risk_free_rate=(-1)*bond_1['log_price'].rename('risk_free_rate')
- 
+
 ## Calculate Bond Excess Returns Across Maturities
 def excess_return_calculation(b2,b1):
     b2=b2.join(b1['log_price'].rename('log_price_lag').shift(-12))
@@ -77,7 +77,7 @@ df=df.set_index('time_m')
 '''
 ALFRED:
 https://alfred.stlouisfed.org
- 
+
 fredapi:
 https://github.com/mortada/fredapi
 '''
@@ -100,7 +100,7 @@ def trans(series, trcode):
     elif trcode == 6:
         trseries = series.map(lambda x: np.log(x)).diff().map(lambda x: x**2)
     return trseries
-        
+
 ## List of Variables and Transformation Codes
 list_of_vars = ['INDPRO','AWHMAN','AWHNONAG','AWOTMAN','DSPI','DSPIC96',
                 'PI','CE16OV','CLF16OV','PAYEMS','MANEMP','DMANEMP',
@@ -116,15 +116,15 @@ list_of_vars = ['INDPRO','AWHMAN','AWHNONAG','AWOTMAN','DSPI','DSPIC96',
 list_of_trcodes = [5 for i in range(60)]
 list_of_trcodes[1] = 1
 for i in [2,3,29,30,32]:
-    list_of_trcodes[i] = 2 
+    list_of_trcodes[i] = 2
 
 for i in [37,38,39]:
     list_of_trcodes[i] = 4
 
 for i in range(41,60):
     list_of_trcodes[i]= 6
-    
-    
+
+
 ## Get Final-Revised Data
 def get_final_revised_series(var,trcode):
     series=fred.get_series_latest_release(var)
@@ -139,31 +139,30 @@ def get_final_revised_series(var,trcode):
 data_final_revised=df
 for i , j in zip(list_of_vars, list_of_trcodes):
     data_final_revised=data_final_revised.join(get_final_revised_series(i,j))
-    
+
 data_final_revised.to_csv('data_final_revised.csv')
 
 ## Get Real-Time Data
 def get_real_time_series(var,trcode):
     series_all = fred.get_series_all_releases(var)
-    
+
     series_all['time_spread'] = series_all.apply(lambda x: (x['realtime_start']-x['date']).days, axis=1)
-    series_all = series_all[series_all['time_spread']<62]
-    
+    series_all = series_all.query('time_spread < 62')
+
     series_all['month_spread'] = series_all.apply(lambda x: x['realtime_start'].month-x['date'].month, axis=1)
-    series_all = series_all[series_all['month_spread'] != 2]
-    series_all = series_all[series_all['month_spread'] != -10]
-    
+    series_all = series_all.query('month_spread!=2 and month_spread!=10')
+
     series_all['month_diff'] = series_all['date'].map(lambda x: x.month).diff().shift(-1)
-    series_all = series_all[series_all['month_diff'] != 0]
-    
+    series_all = series_all.query('month_diff != 0')
+
     series_all['time_m']=series_all['date'].map(lambda x: x.strftime('%Y-%m')).shift(-1)
     series_all[var] = trans(series_all['value'],trcode)
     series_real_time = series_all[['time_m',var]].set_index('time_m')
-    
+
     return series_real_time
 
 data_real_time = df
 for i , j in zip(list_of_vars, list_of_trcodes):
     data_real_time=data_real_time.join(get_real_time_series(i,j))
-    
+
 data_real_time.to_csv('data_real_time.csv')
