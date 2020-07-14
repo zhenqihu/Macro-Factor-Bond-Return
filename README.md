@@ -1,2 +1,5 @@
-# Macro-Factors-Bond-Returns
-Forecasting government bonds returns with macro data
+# Macro Factors & Bond Returns
+
+## Notation of Bond Return
+log bond prices: 
+$p^(n)_t$
